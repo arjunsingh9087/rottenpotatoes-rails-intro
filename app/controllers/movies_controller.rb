@@ -7,9 +7,18 @@ class MoviesController < ApplicationController
   end
 
   def index
-    @movies = Movie.all
+    session[:ratings] = params[:ratings]
+    filter_rating = []
+    unless session[:ratings].nil?
+      filter_rating = session[:ratings].keys
+    else
+      filter_rating = []
+    end
+    @movies = Movie.with_ratings(filter_rating)
+    @all_ratings = Movie.all_ratings
+    @ratings_to_show = filter_rating
   end
-
+  
   def new
     # default: render 'new' template
   end
