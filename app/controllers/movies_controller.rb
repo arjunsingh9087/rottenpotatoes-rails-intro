@@ -14,7 +14,12 @@ class MoviesController < ApplicationController
     else
       filter_rating = []
     end
-    @movies = Movie.with_ratings(filter_rating)
+    
+    if params[:sort] == "title" || params[:sort] == "release_date"
+      @movies = Movie.order(params[:sort])
+    else
+      @movies = Movie.with_ratings(filter_rating)
+    end
     @all_ratings = Movie.all_ratings
     @ratings_to_show = filter_rating
   end
