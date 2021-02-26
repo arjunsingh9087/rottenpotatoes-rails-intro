@@ -7,21 +7,42 @@ class MoviesController < ApplicationController
   end
 
   def index
-    session[:ratings] = params[:ratings]
-    filter_rating = []
-    unless session[:ratings].nil?
-      filter_rating = session[:ratings].keys
-    else
-      filter_rating = []
+    @all_ratings = Movie.all_ratings
+    session[:ratings] = session[:ratings] || @all_ratings
+    
+    #session[:sort] = params[:sort] unless params[:sort].nil?
+    
+    if params.has_key?('commit') and !params.has_key?('ratings') 
+      params['ratings'] = @all_ratings
+    end
+
+    if params.has_key?('ratings')       
+      session[:ratings] = params[:ratings]
     end
     
-    if params[:sort] == "title" || params[:sort] == "release_date"
-      @movies = Movie.order(params[:sort])
-    else
-      @movies = Movie.with_ratings(filter_rating)
+    if params.has_key? :sort
+      session[:sort] = params[:sort]
     end
-    @all_ratings = Movie.all_ratings
-    @ratings_to_show = filter_rating
+    
+    #Actually call the database
+    if session[:ratings] == @all_ratings
+      @movies = Movie.with_ratings(session[:ratings]).order(session[:sort])
+      @ratings_to_show = []
+    else
+      @movies = Movie.with_ratings(session[:ratings].keys).order(session[:sort])
+      @ratings_to_show = session["ratings"]
+    end
+
+    #filter_rating = []
+    #unless session[:ratings].nil?
+    #  filter_rating = session[:ratings].keys
+    #else
+    #  filter_rating = Movie.all_ratings
+    #end
+    
+    #@movies = Movie.with_ratings(filter_rating).order(session[:sort])
+    #@ratings_to_show = session["ratings"]
+    @sort_order = session[:sort]
   end
   
   def new
